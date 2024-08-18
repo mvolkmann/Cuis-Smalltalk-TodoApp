@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 1:56:39 pm'!
+'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 2:01:55 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 399!
+!provides: 'TodoApp' 1 400!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -492,9 +492,10 @@ hoverColor
 hoverColor: aColor
 	hoverColor := aColor! !
 
-!BasicButtonMorph methodsFor: 'accessing' stamp: 'RMV 8/16/2024 13:00:50'!
+!BasicButtonMorph methodsFor: 'accessing' stamp: 'RMV 8/18/2024 13:59:43'!
 morphExtent
 	| labelHeight labelWidth |
+	font ifNil: [ font := FontFamily defaultFamilyAndPointSize ].
 	labelWidth := font widthOfString: label.
 	labelHeight := font pointSize. "TODO: correct?"
 	^ (padding * 2 + labelWidth) @ (padding * 2 + labelHeight)
@@ -807,7 +808,7 @@ morph
 text: aString
 	^ self new text: aString; done: false! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'RMV 8/18/2024 06:03:52'!
+!TodoApp methodsFor: 'initialization' stamp: 'RMV 8/18/2024 14:01:08'!
 initialize
 	| button layout lightBlue row titleLabel |
 
@@ -855,7 +856,7 @@ initialize
 	lightBlue := Color r: 0.450 g: 0.600 b: 0.850.
 	window := SystemWindow new
 		borderColor: lightBlue;
-		labelString: 'Todo App'.
+		setLabel: 'Todo App'.
 
 	layout := window layoutMorph.
 	layout color: Color white; separation: 20.
