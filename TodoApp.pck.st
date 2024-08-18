@@ -138,7 +138,6 @@ initialize
 	label := LabelMorph new.
 	self addMorph: label.
 	
-	"textEntry := CenteredTextEntryMorph new."
 	textEntry := TextEntry2Morph new.
 	textEntry crAction: [
 		label contents: textEntry contents.
