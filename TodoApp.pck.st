@@ -3,93 +3,93 @@
 !provides: 'TodoApp' 1 397!
 SystemOrganization addCategory: #TodoApp!
 
-!classDefinition: #EditableLabelMorph category: #Volkmann!
+!classDefinition: #EditableLabelMorph category: #TodoApp!
 LayoutMorph subclass: #EditableLabelMorph
 	instanceVariableNames: 'label textEntry'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'EditableLabelMorph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'EditableLabelMorph class' category: #TodoApp!
 EditableLabelMorph class
 	instanceVariableNames: ''!
 
-!classDefinition: #Layout2Morph category: #Volkmann!
+!classDefinition: #Layout2Morph category: #TodoApp!
 LayoutMorph subclass: #Layout2Morph
 	instanceVariableNames: 'useEdgeSpace'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'Layout2Morph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'Layout2Morph class' category: #TodoApp!
 Layout2Morph class
 	instanceVariableNames: ''!
 
-!classDefinition: #PluggableScroll2Pane category: #Volkmann!
+!classDefinition: #PluggableScroll2Pane category: #TodoApp!
 PluggableScrollPane subclass: #PluggableScroll2Pane
 	instanceVariableNames: 'onExtentChanged'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'PluggableScroll2Pane class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'PluggableScroll2Pane class' category: #TodoApp!
 PluggableScroll2Pane class
 	instanceVariableNames: ''!
 
-!classDefinition: #CenteredTextEntryMorph category: #Volkmann!
+!classDefinition: #CenteredTextEntryMorph category: #TodoApp!
 TextEntryMorph subclass: #CenteredTextEntryMorph
 	instanceVariableNames: 'padding'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'CenteredTextEntryMorph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'CenteredTextEntryMorph class' category: #TodoApp!
 CenteredTextEntryMorph class
 	instanceVariableNames: ''!
 
-!classDefinition: #TextEntry2Morph category: #Volkmann!
+!classDefinition: #TextEntry2Morph category: #TodoApp!
 TextEntryMorph subclass: #TextEntry2Morph
 	instanceVariableNames: 'escapeAction'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'TextEntry2Morph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'TextEntry2Morph class' category: #TodoApp!
 TextEntry2Morph class
 	instanceVariableNames: ''!
 
-!classDefinition: #BasicButtonMorph category: #Volkmann!
+!classDefinition: #BasicButtonMorph category: #TodoApp!
 BoxedMorph subclass: #BasicButtonMorph
 	instanceVariableNames: 'fillColor font hoverColor hovered label onClick padding textColor'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'BasicButtonMorph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'BasicButtonMorph class' category: #TodoApp!
 BasicButtonMorph class
 	instanceVariableNames: 'label onClick'!
 
-!classDefinition: #BasicCheckboxMorph category: #Volkmann!
+!classDefinition: #BasicCheckboxMorph category: #TodoApp!
 BoxedMorph subclass: #BasicCheckboxMorph
 	instanceVariableNames: 'checked fillColor hoverColor hovered onChange'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'BasicCheckboxMorph class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'BasicCheckboxMorph class' category: #TodoApp!
 BasicCheckboxMorph class
 	instanceVariableNames: ''!
 
-!classDefinition: #Todo category: #Volkmann!
+!classDefinition: #Todo category: #TodoApp!
 Object subclass: #Todo
 	instanceVariableNames: 'checkbox label labelFont onDelete onDoneToggle row'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'Todo class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'Todo class' category: #TodoApp!
 Todo class
 	instanceVariableNames: ''!
 
-!classDefinition: #TodoApp category: #Volkmann!
+!classDefinition: #TodoApp category: #TodoApp!
 Object subclass: #TodoApp
 	instanceVariableNames: 'scrollPane statusLabel todoEntry todos todosPane window titleLabelx'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Volkmann'!
-!classDefinition: 'TodoApp class' category: #Volkmann!
+	category: 'TodoApp'!
+!classDefinition: 'TodoApp class' category: #TodoApp!
 TodoApp class
 	instanceVariableNames: ''!
 
@@ -911,16 +911,16 @@ addTodoFromEntry
 		todoEntry keyboardFocusChange: true
 	]! !
 
-!Object methodsFor: '*Volkmann' stamp: 'RMV 6/14/2024 16:53:19'!
+!Object methodsFor: '*TodoApp' stamp: 'RMV 6/14/2024 16:53:19'!
 logAs: aString
 	('{1} = {2}' format: {aString. self}) print! !
 
-!Morph methodsFor: '*Volkmann' stamp: 'RMV 8/4/2024 18:35:39'!
+!Morph methodsFor: '*TodoApp' stamp: 'RMV 8/4/2024 18:35:39'!
 leftTopAlign
 	self layoutSpec offAxisEdgeWeight: 0.
 ! !
 
-!LayoutMorph methodsFor: '*Volkmann' stamp: 'RMV 8/5/2024 16:42:08'!
+!LayoutMorph methodsFor: '*TodoApp' stamp: 'RMV 8/5/2024 16:42:08'!
 addMorphs: anArray withSpace: aNumber
 	"Adds each morph in anArray with a spacer morph between them whose width is aNumber."
 	anArray
