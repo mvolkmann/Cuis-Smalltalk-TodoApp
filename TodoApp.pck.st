@@ -1,7 +1,9 @@
-'From Cuis7.1 [latest update: #6604] on 18 August 2024 at 6:15:50 am'!
+'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 1:56:39 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 397!
+!provides: 'TodoApp' 1 399!
+!requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
+
 
 !classDefinition: #EditableLabelMorph category: #TodoApp!
 LayoutMorph subclass: #EditableLabelMorph
@@ -33,26 +35,6 @@ PluggableScrollPane subclass: #PluggableScroll2Pane
 PluggableScroll2Pane class
 	instanceVariableNames: ''!
 
-!classDefinition: #CenteredTextEntryMorph category: #TodoApp!
-TextEntryMorph subclass: #CenteredTextEntryMorph
-	instanceVariableNames: 'padding'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TodoApp'!
-!classDefinition: 'CenteredTextEntryMorph class' category: #TodoApp!
-CenteredTextEntryMorph class
-	instanceVariableNames: ''!
-
-!classDefinition: #TextEntry2Morph category: #TodoApp!
-TextEntryMorph subclass: #TextEntry2Morph
-	instanceVariableNames: 'escapeAction'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TodoApp'!
-!classDefinition: 'TextEntry2Morph class' category: #TodoApp!
-TextEntry2Morph class
-	instanceVariableNames: ''!
-
 !classDefinition: #BasicButtonMorph category: #TodoApp!
 BoxedMorph subclass: #BasicButtonMorph
 	instanceVariableNames: 'fillColor font hoverColor hovered label onClick padding textColor'
@@ -71,6 +53,26 @@ BoxedMorph subclass: #BasicCheckboxMorph
 	category: 'TodoApp'!
 !classDefinition: 'BasicCheckboxMorph class' category: #TodoApp!
 BasicCheckboxMorph class
+	instanceVariableNames: ''!
+
+!classDefinition: #CenteredTextEntryMorph category: #TodoApp!
+TextEntryMorph subclass: #CenteredTextEntryMorph
+	instanceVariableNames: 'padding'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TodoApp'!
+!classDefinition: 'CenteredTextEntryMorph class' category: #TodoApp!
+CenteredTextEntryMorph class
+	instanceVariableNames: ''!
+
+!classDefinition: #TextEntry2Morph category: #TodoApp!
+TextEntryMorph subclass: #TextEntry2Morph
+	instanceVariableNames: 'escapeAction'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TodoApp'!
+!classDefinition: 'TextEntry2Morph class' category: #TodoApp!
+TextEntry2Morph class
 	instanceVariableNames: ''!
 
 !classDefinition: #Todo category: #TodoApp!
@@ -92,6 +94,7 @@ Object subclass: #TodoApp
 !classDefinition: 'TodoApp class' category: #TodoApp!
 TodoApp class
 	instanceVariableNames: ''!
+
 
 !Layout2Morph commentStamp: '<historical>' prior: 0!
 This is a subclass of LayoutMorph that adds the instance variable "useEdgeSpace".
@@ -402,135 +405,6 @@ extentChanged: oldExtent
 onExtentChanged: aBlock
 	onExtentChanged := aBlock! !
 
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/17/2024 16:16:50'!
-characterIndexAtPoint: aPoint
-	| delta line block f pPoint |
-	delta := padding negated.
-	pPoint := aPoint translatedBy: delta @ delta.
-	f := self fontToUse.
-	line := TextLine
-		start: 1
-		stop: contents size
-		internalSpaces: 0
-		paddingWidth: 0.
-	line
-		rectangle: (0 @ 0 extent: extent);
-		lineHeight: f lineSpacing baseline: f ascent.
-	block := (CharacterBlockScanner new text: (contents asText font: f))
-		defaultFont: f;
-		characterBlockAtPoint: pPoint in: line forCursorPosition: true.
-	^ block stringIndex.! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/5/2024 16:56:34'!
-displayTextCursorAtX: x top: top bottom: bottom emphasis: anEmphasis on: aCanvas
-	| textCursorColor x1 isBold isItalic x0 h w halfW r d |
-	isBold := anEmphasis allMask: 1.
-	isItalic := anEmphasis allMask: 2.
-	textCursorColor := Theme current textCursor.
-	h := bottom - top.
-	w := isBold
-		ifTrue: [ h // 25 + 2 ]
-		ifFalse: [ h // 30 + 1 ].
-	halfW := w // 2.
-	isItalic
-		ifTrue: [
-			"Keep tweaking if needed!!"
-			d := isBold
-				ifTrue: [ 3 ]
-				ifFalse: [ h // 24 ].
-			x0 := x - (h * 5 // 24) + d.
-			x1 := x + d ]
-		ifFalse: [
-			x0 := x.
-			x1 := x ].
-	x0 < halfW ifTrue: [
-		x1 := x1 - x0 + halfW.
-		x0 := halfW ].
-	r := extent x - halfW - 1.
-	r < x1 ifTrue: [
-		x0 := x0 + r - x1.
-		x1 := r ].
-	textCursorRect := x0 - halfW - 1 @ top corner: x1 + halfW + 1 + 1 @ bottom.
-	aCanvas
-		line: x0 + halfW @ bottom
-		to: x1 + halfW @ (top + w)
-		width: w
-		color: textCursorColor.! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 08:59:44'!
-drawOn: aCanvas
-	aCanvas
-		fillRectangle: (0 @ 0 extent: extent)
-		color: backgroundColor.
-	self hasSelection ifTrue: [ self drawSelectionOn: aCanvas ].
-	self hasTextCursor ifTrue: [ self drawTextCursorOn: aCanvas ].
-	aCanvas
-		drawString: contents
-		at: padding @ padding
-		font: self fontToUse
-		color: color.
-	borderWidth > 0 ifTrue: [
-		aCanvas
-			frameRectangle: (0 @ 0 extent: extent x + 1 @ extent y)
-			color: borderColor
-			borderWidth: borderWidth
-			borderStyleSymbol: #simple ].! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:00:58'!
-drawSelectionOn: aCanvas
-	| bottom leftX rightX |
-	
-	bottom := self baseFont lineSpacing.
-	leftX := self fontToUse widthOfString: contents from: 1 to: editor startIndex - 1.
-	leftX := leftX min: extent x.
-	rightX := self fontToUse widthOfString: contents from: 1 to: editor stopIndex - 1.
-	rightX := rightX min: extent x.
-
-	aCanvas
-		fillRectangle: (padding + leftX @ padding corner: rightX + padding + 1 @ (padding + bottom + 1))
-		color: (Theme current textHighlightFocused: self hasKeyboardFocus).! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:01:14'!
-drawTextCursorOn: aCanvas
-	| bottom x |
-	showTextCursor ifTrue: [
-		bottom := self baseFont lineSpacing.
-		x := self fontToUse
-			widthOfString: contents
-			from: 1
-			to: editor startIndex - 1.
-		self
-			displayTextCursorAtX: x + padding
-			top: padding - 2
-			bottom: padding + bottom - 2
-			emphasis: emphasis
-			on: aCanvas ].! !
-
-!CenteredTextEntryMorph methodsFor: 'initialization' stamp: 'RMV 8/17/2024 18:49:58'!
-initialize
-	| height lineHeight width |
-	super initialize.
-	width := self morphExtent x.
-	height := self morphExtent y.
-	lineHeight := self baseFont lineSpacing.
-	padding := (height - lineHeight) / 2.
-	self layoutSpec: (LayoutSpec fixedWidth: width fixedHeight: height)
-! !
-
-!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:31:52'!
-escapeAction
-	^ escapeAction! !
-
-!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:32:07'!
-escapeAction: aBlock
-	escapeAction := aBlock! !
-
-!TextEntry2Morph methodsFor: 'event handling' stamp: 'RMV 8/17/2024 18:38:10'!
-keyStroke: aKeyboardEvent
-	(aKeyboardEvent isEsc and: (escapeAction isNil not))
-		ifTrue: [	 escapeAction value ]
-		ifFalse: [ super keyStroke: aKeyboardEvent ]! !
-
 !BasicButtonMorph methodsFor: 'drawing' stamp: 'RMV 8/16/2024 16:32:44'!
 drawOn: aCanvas
 	| rect rectColor |
@@ -727,6 +601,135 @@ hoverColor: aColor
 !BasicCheckboxMorph methodsFor: 'accessing' stamp: 'RMV 8/15/2024 08:43:55'!
 requiresVectorCanvas
 	^ true! !
+
+!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/17/2024 16:16:50'!
+characterIndexAtPoint: aPoint
+	| delta line block f pPoint |
+	delta := padding negated.
+	pPoint := aPoint translatedBy: delta @ delta.
+	f := self fontToUse.
+	line := TextLine
+		start: 1
+		stop: contents size
+		internalSpaces: 0
+		paddingWidth: 0.
+	line
+		rectangle: (0 @ 0 extent: extent);
+		lineHeight: f lineSpacing baseline: f ascent.
+	block := (CharacterBlockScanner new text: (contents asText font: f))
+		defaultFont: f;
+		characterBlockAtPoint: pPoint in: line forCursorPosition: true.
+	^ block stringIndex.! !
+
+!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/5/2024 16:56:34'!
+displayTextCursorAtX: x top: top bottom: bottom emphasis: anEmphasis on: aCanvas
+	| textCursorColor x1 isBold isItalic x0 h w halfW r d |
+	isBold := anEmphasis allMask: 1.
+	isItalic := anEmphasis allMask: 2.
+	textCursorColor := Theme current textCursor.
+	h := bottom - top.
+	w := isBold
+		ifTrue: [ h // 25 + 2 ]
+		ifFalse: [ h // 30 + 1 ].
+	halfW := w // 2.
+	isItalic
+		ifTrue: [
+			"Keep tweaking if needed!!"
+			d := isBold
+				ifTrue: [ 3 ]
+				ifFalse: [ h // 24 ].
+			x0 := x - (h * 5 // 24) + d.
+			x1 := x + d ]
+		ifFalse: [
+			x0 := x.
+			x1 := x ].
+	x0 < halfW ifTrue: [
+		x1 := x1 - x0 + halfW.
+		x0 := halfW ].
+	r := extent x - halfW - 1.
+	r < x1 ifTrue: [
+		x0 := x0 + r - x1.
+		x1 := r ].
+	textCursorRect := x0 - halfW - 1 @ top corner: x1 + halfW + 1 + 1 @ bottom.
+	aCanvas
+		line: x0 + halfW @ bottom
+		to: x1 + halfW @ (top + w)
+		width: w
+		color: textCursorColor.! !
+
+!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 08:59:44'!
+drawOn: aCanvas
+	aCanvas
+		fillRectangle: (0 @ 0 extent: extent)
+		color: backgroundColor.
+	self hasSelection ifTrue: [ self drawSelectionOn: aCanvas ].
+	self hasTextCursor ifTrue: [ self drawTextCursorOn: aCanvas ].
+	aCanvas
+		drawString: contents
+		at: padding @ padding
+		font: self fontToUse
+		color: color.
+	borderWidth > 0 ifTrue: [
+		aCanvas
+			frameRectangle: (0 @ 0 extent: extent x + 1 @ extent y)
+			color: borderColor
+			borderWidth: borderWidth
+			borderStyleSymbol: #simple ].! !
+
+!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:00:58'!
+drawSelectionOn: aCanvas
+	| bottom leftX rightX |
+	
+	bottom := self baseFont lineSpacing.
+	leftX := self fontToUse widthOfString: contents from: 1 to: editor startIndex - 1.
+	leftX := leftX min: extent x.
+	rightX := self fontToUse widthOfString: contents from: 1 to: editor stopIndex - 1.
+	rightX := rightX min: extent x.
+
+	aCanvas
+		fillRectangle: (padding + leftX @ padding corner: rightX + padding + 1 @ (padding + bottom + 1))
+		color: (Theme current textHighlightFocused: self hasKeyboardFocus).! !
+
+!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:01:14'!
+drawTextCursorOn: aCanvas
+	| bottom x |
+	showTextCursor ifTrue: [
+		bottom := self baseFont lineSpacing.
+		x := self fontToUse
+			widthOfString: contents
+			from: 1
+			to: editor startIndex - 1.
+		self
+			displayTextCursorAtX: x + padding
+			top: padding - 2
+			bottom: padding + bottom - 2
+			emphasis: emphasis
+			on: aCanvas ].! !
+
+!CenteredTextEntryMorph methodsFor: 'initialization' stamp: 'RMV 8/17/2024 18:49:58'!
+initialize
+	| height lineHeight width |
+	super initialize.
+	width := self morphExtent x.
+	height := self morphExtent y.
+	lineHeight := self baseFont lineSpacing.
+	padding := (height - lineHeight) / 2.
+	self layoutSpec: (LayoutSpec fixedWidth: width fixedHeight: height)
+! !
+
+!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:31:52'!
+escapeAction
+	^ escapeAction! !
+
+!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:32:07'!
+escapeAction: aBlock
+	escapeAction := aBlock! !
+
+!TextEntry2Morph methodsFor: 'event handling' stamp: 'RMV 8/17/2024 18:38:10'!
+keyStroke: aKeyboardEvent
+	(aKeyboardEvent isEsc and: (escapeAction isNil not))
+		ifTrue: [	 escapeAction value ]
+		ifFalse: [ super keyStroke: aKeyboardEvent ]! !
 
 !Todo methodsFor: 'accessing' stamp: 'RMV 8/15/2024 18:40:33'!
 done
