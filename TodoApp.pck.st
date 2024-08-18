@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 2:01:55 pm'!
+'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 2:54:41 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 400!
+!provides: 'TodoApp' 1 401!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -96,16 +96,48 @@ TodoApp class
 	instanceVariableNames: ''!
 
 
-!Layout2Morph commentStamp: '<historical>' prior: 0!
-This is a subclass of LayoutMorph that adds the instance variable "useEdgeSpace".
-When true, x and y separation are kept between submorphs and the
-edge of our extent, othersize no space is kept between submorphs 
-and our outer edge.!
+!EditableLabelMorph commentStamp: 'RMV 8/18/2024 14:50:42' prior: 0!
+This is a morph that draws either a LabelMorph or a TextEntry2Morph.
+Initially it draws its contents value in a LabelMorph.
+If the LabelMorph is clicked, it is make invisible and the TextEntry2Morph is made visible.
+This allows users to edit the contents.
 
-!CenteredTextEntryMorph commentStamp: 'RMV 8/5/2024 16:54:03' prior: 0!
+Press the return key to save the new contents, make the TextEntry2Morph invisible,
+and make the LabelMorph visible with the new contents.
+
+Press the escape key to discard the changes, make the TextEntry2Morph invisible,
+and make the LabelMorph visible with the old contents.!
+
+!Layout2Morph commentStamp: 'RMV 8/18/2024 14:52:33' prior: 0!
+This is a subclass of LayoutMorph that adds the instance variable "useEdgeSpace".
+When true, x and y separation are kept between submorphs AND at the edges of our extent.
+Othersize separation is only kept between the submorphs and not at the edges of our extent.!
+
+!PluggableScroll2Pane commentStamp: 'RMV 8/18/2024 14:53:09' prior: 0!
+This is a subclass of PluggableScrollPane that adds the ability to listen for extent changes.!
+
+!BasicButtonMorph commentStamp: 'RMV 8/18/2024 14:46:14' prior: 0!
+This is a basic button morph that is simpler and easier to understand that PluggableButtonMorph.!
+
+!BasicCheckboxMorph commentStamp: 'RMV 8/18/2024 14:46:57' prior: 0!
+This is a basic checkbox morph that is simpler and easier to understand that CheckButtonMorph.
+It also has a look that I find more intuitive.!
+
+!CenteredTextEntryMorph commentStamp: 'RMV 8/18/2024 14:47:09' prior: 0!
 TextEntryMorph supports single-line text entry,
 but does not center the text vertically.
-This subclass of TextMorph fixes that.!
+This subclass of TextEntryMorph fixes that.!
+
+!TextEntry2Morph commentStamp: 'RMV 8/18/2024 14:53:50' prior: 0!
+This is a subclass of TextEntryMorph that addes the ability to listen for presses of the escape key.!
+
+!Todo commentStamp: 'RMV 8/18/2024 14:54:14' prior: 0!
+Instances of this class represent a todo item that has a text description and can be marked as done.
+Send #morph to get a morph that represents a todo item.!
+
+!TodoApp commentStamp: 'RMV 8/18/2024 14:45:24' prior: 0!
+This is a basic todo application.
+It was created as an exercise for learning about Morphic.!
 
 !EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:34:42'!
 color: aColor
