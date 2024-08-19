@@ -1,10 +1,25 @@
-'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 2:54:41 pm'!
+'From Cuis7.1 [latest update: #6594] on 18 August 2024 at 7:08:42 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 401!
+!provides: 'TodoApp' 1 405!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
 
+!classDefinition: #TodoAppPackage category: #TodoApp!
+CodePackage subclass: #TodoAppPackage
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TodoApp'!
+!classDefinition: 'TodoAppPackage class' category: #TodoApp!
+TodoAppPackage class
+	instanceVariableNames: ''!
+
+
+!TodoAppPackage class methodsFor: 'as yet unclassified' stamp: 'RMV 8/18/2024 19:08:21'!
+prePackageInstall
+	TrueTypeFontFamily readAllTrueTypeFontsIn: (DirectoryEntry trueTypeFontsDirectory / 'KurintoSans')! !
+TodoAppPackage prePackageInstall!
 !classDefinition: #EditableLabelMorph category: #TodoApp!
 LayoutMorph subclass: #EditableLabelMorph
 	instanceVariableNames: 'label textEntry'
@@ -840,7 +855,7 @@ morph
 text: aString
 	^ self new text: aString; done: false! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'RMV 8/18/2024 14:01:08'!
+!TodoApp methodsFor: 'initialization' stamp: 'RMV 8/18/2024 18:43:55'!
 initialize
 	| button layout lightBlue row titleLabel |
 
@@ -873,7 +888,7 @@ initialize
 	scrollPane color: Color transparent.
 	scrollPane scroller: todosPane.
 	scrollPane onExtentChanged: [ :newExtent |
-		todosPane morphExtent: (scrollPane hScrollBarWidth - 10) @ todosPane morphExtent y.
+		todosPane morphWidth: (scrollPane hScrollBarWidth - 10).
 	].
 
 	todos := OrderedCollection new.
@@ -918,7 +933,7 @@ status
 		].
 	^ '{1} of {2} remaining' format: {remaining. todos size}.! !
 
-!TodoApp methodsFor: 'private' stamp: 'RMV 8/18/2024 06:10:57'!
+!TodoApp methodsFor: 'private' stamp: 'RMV 8/18/2024 18:43:20'!
 addTodo: aString atStart: aBoolean
 	| todo |
 	todo := Todo text: aString.
@@ -928,7 +943,7 @@ addTodo: aString atStart: aBoolean
 	todo onDelete: [
 		todos removeAllSuchThat: [:t | t text = todo text].
 		todosPane removeMorph: todo morph.
-		todosPane morphExtent: todosPane morphExtent x @ todosPane minimumExtent y.
+		todosPane morphHeight: todosPane minimumExtent y.
 		statusLabel contents: self status.
 	].
 	todos add: todo.
@@ -966,3 +981,4 @@ addMorphs: anArray withSpace: aNumber
 			spacer := BoxedMorph new morphExtent: 10@10; borderWidth: 0; color: Color transparent.
 			self addMorph: spacer
 		]! !
+TodoAppPackage postPackageInstall!
