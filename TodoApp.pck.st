@@ -1,8 +1,9 @@
-'From Cuis7.1 [latest update: #6594] on 19 August 2024 at 3:31:07 pm'!
+'From Cuis7.1 [latest update: #6615] on 21 August 2024 at 7:55:12 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 406!
+!provides: 'TodoApp' 1 408!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
+
 
 !classDefinition: #EditableLabelMorph category: #TodoApp!
 LayoutMorph subclass: #EditableLabelMorph
@@ -12,16 +13,6 @@ LayoutMorph subclass: #EditableLabelMorph
 	category: 'TodoApp'!
 !classDefinition: 'EditableLabelMorph class' category: #TodoApp!
 EditableLabelMorph class
-	instanceVariableNames: ''!
-
-!classDefinition: #Layout2Morph category: #TodoApp!
-LayoutMorph subclass: #Layout2Morph
-	instanceVariableNames: 'useEdgeSpace'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TodoApp'!
-!classDefinition: 'Layout2Morph class' category: #TodoApp!
-Layout2Morph class
 	instanceVariableNames: ''!
 
 !classDefinition: #PluggableScroll2Pane category: #TodoApp!
@@ -107,11 +98,6 @@ and make the LabelMorph visible with the new contents.
 Press the escape key to discard the changes, make the TextEntry2Morph invisible,
 and make the LabelMorph visible with the old contents.!
 
-!Layout2Morph commentStamp: 'RMV 8/18/2024 14:52:33' prior: 0!
-This is a subclass of LayoutMorph that adds the instance variable "useEdgeSpace".
-When true, x and y separation are kept between submorphs AND at the edges of our extent.
-Othersize separation is only kept between the submorphs and not at the edges of our extent.!
-
 !PluggableScroll2Pane commentStamp: 'RMV 8/18/2024 14:53:09' prior: 0!
 This is a subclass of PluggableScrollPane that adds the ability to listen for extent changes.!
 
@@ -186,13 +172,13 @@ initialize
 	textEntry visible: false.
 	self addMorph: textEntry.! !
 
-!EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 18:21:47'!
+!EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'rmv 8/20/2024 08:34:52'!
 mouseButton1Down: aMouseEvent localPosition: aPosition
 	| worldPosition |
 	worldPosition := aMouseEvent eventPosition.
 	(label coversPixel: worldPosition) ifTrue: [
 		label visible: (label visible not).
-		textEntry visible: (textEntry visible not).
+		textEntry visible: textEntry visible not.
 	]! !
 
 !EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 16:16:50'!
@@ -205,227 +191,6 @@ new
 	"It's necessary to override this method because the
 	superclass LayoutMorph new method triggers an error."
 	^ self newRow! !
-
-!Layout2Morph methodsFor: 'initialization' stamp: 'RMV 8/14/2024 18:33:56'!
-initialize
-	super initialize.
-	useEdgeSpace := true! !
-
-!Layout2Morph methodsFor: 'geometry' stamp: 'RMV 8/14/2024 19:47:20'!
-minimumExtent: cachedValues
-	"Answer size sufficient to frame my submorphs."
-	
-	| width height mle |
-	width  := 0.
-	height := 0.
-	(self direction = #vertical)
-		ifTrue: [ "Column"
-			self submorphsToLayout do: [ :sm |
-				mle := sm minimumLayoutExtent: cachedValues.
-				"use maximum width across submorphs"
-				width := width max: mle x.
-				"sum up submorph heights, including separation"
-				height := height + mle y + self ySeparation.
-			].
-			useEdgeSpace
-				ifTrue: [
-					height := height + self ySeparation. "one side already separated"
-					width := width + (2 * self xSeparation). "separation on each side"
-				]
-				ifFalse: [
-					height := height - self ySeparation. "one side already separated"
-				].
-		]
-		ifFalse: [ "Row"
-			self submorphsToLayout do: [ :sm |
-				mle := sm minimumLayoutExtent: cachedValues.
-				"sum up submorphs width"
-				width := width + mle x + self xSeparation.
-				"use maximum height across submorph"
-				height := height max: mle y.
-			].
-			useEdgeSpace
-				ifTrue: [
-					width := width + self xSeparation. "one side already separated"
-					height := height + (2 * self ySeparation). "separation on each side"
-				]
-				ifFalse: [
-					width := width - self xSeparation. "one side already separated"
-				].
-		].
-
-	^ (width @ height) + self extentBorder! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'RMV 8/14/2024 18:32:47'!
-layoutSubmorphsHorizontallyIn: boundsForLayout
-	"Compute a new layout based on the given layout bounds."
-
-	| visibleSubmorphs gap gapCount widths widthToAllocate leftOver x height y cache |
-	"Preconditions: self isRow & morphExtent >= minimumLayoutExtent"
-	(visibleSubmorphs := self submorphsToLayout reversed  "Display Order")
-		ifEmpty: [ ^ self. "Nothing to layout, besides `sum` below, would fail" ].
-	
-	gap := self xSeparation.
-	gapCount := useEdgeSpace ifTrue: [ visibleSubmorphs size + 1 ] ifFalse: [ visibleSubmorphs size - 1].
-	widthToAllocate := (boundsForLayout width - (gapCount * gap)).
-	"widthToAllocate := (boundsForLayout width - ((visibleSubmorphs size - 1) * gap))."
-	cache := IdentityDictionary new.
-	widths := self widthsFor: visibleSubmorphs within: widthToAllocate minLayoutExtentCache: cache.
-	leftOver := widthToAllocate - widths sum.
-	x := boundsForLayout left + (leftOver * self axisEdgeWeight).
-	useEdgeSpace ifTrue: [ x := x + gap ].
-
-	visibleSubmorphs with: widths do: [ :sm :smWidth |
-		height := self offAxisHeightFor: sm within: boundsForLayout height minLayoutExtentCache: cache.
-		y := self offAxisYOffsetFor: sm within: boundsForLayout height - height.
-		sm fitInto: (x @ (boundsForLayout top + y) extent: smWidth @ height).
-		x := x + smWidth + gap.
-	]! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'KenD 8/15/2024 05:24:55'!
-layoutSubmorphsVerticallyIn: boundsForLayout
-	"Compute a new layout based on the given layout bounds."
-
-	| visibleSubmorphs gap gapCount heights heightToAllocate leftOver y width x cache |
-	"Preconditions: self isRow & morphExtent >= minimumLayoutExtent"
-	(visibleSubmorphs := self submorphsToLayout reversed  "Display Order")
-		ifEmpty: [ ^ self. "Nothing to layout, besides `sum` below, would fail" ].
-
-	gap := self ySeparation.
-	gapCount := useEdgeSpace ifTrue: [ visibleSubmorphs size + 1 ] ifFalse: [ visibleSubmorphs size - 1].
-	heightToAllocate := (boundsForLayout height - (gapCount * gap)).
-	cache := IdentityDictionary new.
-	heights := self heightsFor: visibleSubmorphs within: heightToAllocate minLayoutExtentCache: cache.
-	leftOver := heightToAllocate - heights sum.
-	y := boundsForLayout top + (leftOver * self axisEdgeWeight).
-	useEdgeSpace ifTrue: [ y := y + gap ].
-
-	visibleSubmorphs with: heights do: [ :sm :smHeight |
-		width := self offAxisWidthFor: sm within: boundsForLayout width minLayoutExtentCache: cache.
-		x := self offAxisXOffsetFor: sm within: boundsForLayout width - width.
-		sm fitInto: (boundsForLayout left + x @ y extent: width @ smHeight).
-		y := y + smHeight + gap.
-	]! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'KenD 8/15/2024 05:41:15'!
-offAxisHeightFor: aMorph within: availableHeight minLayoutExtentCache: cache
-	"Answer height for a single morph -- offAxis calculation for a Row"
-	
-	| availableForPropHeight actualPropHeight |
-	availableForPropHeight := useEdgeSpace 
-		ifTrue: [ availableHeight  - (2 * self ySeparation) ]
-		ifFalse: [ availableHeight ].
-	actualPropHeight := (availableForPropHeight * aMorph layoutSpec proportionalLayoutHeight)
-							 max: (aMorph minimumLayoutExtent: cache) y.
-	^ actualPropHeight! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'KenD 8/15/2024 05:42:45'!
-offAxisWidthFor: aMorph within: availableWidth minLayoutExtentCache: cache
-	"Answer width for a single morph -- offAxis calculation for a Column"
-
-	| availableForPropWidth actualPropWidth |
-	availableForPropWidth := useEdgeSpace 
-		ifTrue: [ 	availableWidth - (2 * self xSeparation) ]
-		 ifFalse: [ availableWidth ].
-	actualPropWidth := (availableForPropWidth * aMorph layoutSpec proportionalLayoutWidth)
-						 	max: (aMorph minimumLayoutExtent: cache) x.
-	^ actualPropWidth! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'RMV 8/14/2024 19:30:46'!
-offAxisXOffsetFor: aMorph within: availableWidth
-	"Answer x offset for a single morph -- offAxis calculation for a Column"
-
-	| leftOver offset |
-	leftOver := useEdgeSpace
-		ifTrue: [availableWidth - (2 * self xSeparation)] 
-		ifFalse: [availableWidth].
-	offset := leftOver * aMorph layoutSpec offAxisEdgeWeight. 
-	useEdgeSpace ifTrue: [ ^ self xSeparation + offset ].
-	^ offset! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'RMV 8/14/2024 19:30:50'!
-offAxisYOffsetFor: aMorph within: availableHeight
-	"Answer y offset for a single morph -- offAxis calculation for a Row"
-	
-	| leftOver offset |
-	leftOver := useEdgeSpace
-		ifTrue: [availableHeight - (2 * self ySeparation)] 
-		ifFalse: [availableHeight].
-	offset := leftOver * aMorph layoutSpec offAxisEdgeWeight.
-	useEdgeSpace ifTrue: [ ^ self ySeparation + offset ].
-	^offset! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'RMV 8/14/2024 18:32:08'!
-useEdgeSpace
-	^ useEdgeSpace! !
-
-!Layout2Morph methodsFor: 'layout' stamp: 'RMV 8/14/2024 18:31:59'!
-useEdgeSpace: aBoolean
-	useEdgeSpace := aBoolean! !
-
-!Layout2Morph class methodsFor: 'as yet unclassified' stamp: 'RMV 8/14/2024 19:47:33'!
-example1
-	| withEdge noEdge upSpec downSpec |
-	withEdge := self newRow :: useEdgeSpace: true;  separation: 20.
-	noEdge := self newRow :: useEdgeSpace: false;  separation: 20.
-	upSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 0.
-	upSpec proportionalWidth: 0.8 minimum: 100; proportionalHeight: 0.8 minimum: 100.
-	downSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 1.
-	downSpec proportionalWidth: 0.8 minimum: 100; proportionalHeight: 0.8 minimum: 100.
-	
-	withEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	noEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	withEdge addMorph: (LabelMorph new :: contents: 'WITH Edge').
-	noEdge addMorph: (LabelMorph new :: contents: 'withOUT Edge').
-	withEdge addMorph: (BoxedMorph new :: layoutSpec: downSpec).
-	noEdge addMorph: (BoxedMorph new ::  layoutSpec: downSpec).
-	
-	withEdge openInWorld.
-	noEdge openInWorld.! !
-
-!Layout2Morph class methodsFor: 'examples' stamp: 'RMV 8/15/2024 08:25:48'!
-exampleEdgesColumn
-	"Show 2 cases :1 useEdgeSpace true and 1 false"
-	" self exampleEdgesColumn "
-	| withEdge noEdge upSpec downSpec |
-	withEdge := self newColumn :: useEdgeSpace: true;  separation: 20.
-	noEdge := self newColumn :: useEdgeSpace: false;  separation: 20.
-	upSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 0.
-	upSpec proportionalWidth: 0.8 minimum: 100; proportionalHeight: 0.8 minimum: 100.
-	downSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 1.
-	downSpec proportionalWidth: 0.5 minimum: 100; proportionalHeight: 0.5 minimum: 100.
-	
-	withEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	noEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	withEdge addMorph: (LabelMorph new :: contents: 'WITH Edge').
-	noEdge addMorph: (LabelMorph new :: contents: 'withOUT Edge').
-	withEdge addMorph: (BoxedMorph new :: layoutSpec: downSpec).
-	noEdge addMorph: (BoxedMorph new ::  layoutSpec: downSpec).
-	
-	withEdge openInWorld.
-	noEdge openInWorld.! !
-
-!Layout2Morph class methodsFor: 'examples' stamp: 'KenD 8/15/2024 05:26:38'!
-exampleEdgesRow
-	"Show 2 cases: 1 useEdgeSpace true and 1 false"
-	" self exampleEdgesRow "
-	| withEdge noEdge upSpec downSpec |
-	withEdge := self newRow :: useEdgeSpace: true;  separation: 20.
-	noEdge := self newRow :: useEdgeSpace: false;  separation: 20.
-	upSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 0.
-	upSpec proportionalWidth: 0.8 minimum: 100; proportionalHeight: 0.8 minimum: 100.
-	downSpec := LayoutSpec keepMorphExtent :: offAxisEdgeWeight: 1.
-	downSpec proportionalWidth: 0.5 minimum: 100; proportionalHeight: 0.5 minimum: 100.
-	
-	withEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	noEdge addMorph: (BoxedMorph new :: color: Color blue;  layoutSpec: upSpec).
-	withEdge addMorph: (LabelMorph new :: contents: 'WITH Edge').
-	noEdge addMorph: (LabelMorph new :: contents: 'withOUT Edge').
-	withEdge addMorph: (BoxedMorph new :: layoutSpec: downSpec).
-	noEdge addMorph: (BoxedMorph new ::  layoutSpec: downSpec).
-	
-	withEdge openInWorld.
-	noEdge openInWorld.! !
 
 !PluggableScroll2Pane methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:08:48'!
 extentChanged: oldExtent
@@ -792,7 +557,7 @@ onDoneToggle: aBlock
 handleLabelClick: aMouseEvent
 	aMouseEvent logAs: 'Todo handleLabelClick: aMouseEvent'.! !
 
-!Todo methodsFor: 'initialization' stamp: 'RMV 8/17/2024 19:59:10'!
+!Todo methodsFor: 'initialization' stamp: 'rmv 8/21/2024 19:52:15'!
 initialize
 	| button buttonFont |
 	
@@ -818,7 +583,7 @@ initialize
 	button fillColor: Color transparent; textColor: Color red.
 	button font: buttonFont.
 		
-	row := Layout2Morph newRow useEdgeSpace: false.
+	row := LayoutMorph newRow useEdgeSpace: false.
 	"row borderColor: Color red; borderWidth: 1."
 	row color: Color transparent.
 	row layoutSpec proportionalWidth: 1.
@@ -843,7 +608,7 @@ text: aString
 initialize
 	TrueTypeFontFamily readAllTrueTypeFontsIn: (DirectoryEntry trueTypeFontsDirectory / 'KurintoSans')! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'RMV 8/18/2024 18:43:55'!
+!TodoApp methodsFor: 'initialization' stamp: 'rmv 8/21/2024 19:52:36'!
 initialize
 	| button layout lightBlue row titleLabel |
 
@@ -865,7 +630,7 @@ initialize
 	row layoutSpec proportionalHeight: 0. "defaults to 1"
 	row addMorphs: {todoEntry. button} withSpace: 10.
 
-	todosPane := Layout2Morph newColumn useEdgeSpace: false.
+	todosPane := LayoutMorph newColumn useEdgeSpace: false.
 	todosPane layoutSpec proportionalWidth: 1.
 	todosPane color: Color transparent.
 
