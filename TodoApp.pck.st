@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6615] on 21 August 2024 at 7:55:12 pm'!
+'From Cuis7.1 [latest update: #6629] on 24 August 2024 at 1:15:39 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 408!
+!provides: 'TodoApp' 1 411!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -186,10 +186,10 @@ text: aString
 	label contents: aString.
 	textEntry contents: aString.! !
 
-!EditableLabelMorph class methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 16:19:07'!
+!EditableLabelMorph class methodsFor: 'as yet unclassified' stamp: 'rmv 8/24/2024 12:12:51'!
 new
-	"It's necessary to override this method because the
-	superclass LayoutMorph new method triggers an error."
+	"It's necessary to override this method because otherwise
+	the superclass LayoutMorph new method triggers an error."
 	^ self newRow! !
 
 !PluggableScroll2Pane methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:08:48'!
@@ -608,9 +608,9 @@ text: aString
 initialize
 	TrueTypeFontFamily readAllTrueTypeFontsIn: (DirectoryEntry trueTypeFontsDirectory / 'KurintoSans')! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'rmv 8/21/2024 19:52:36'!
+!TodoApp methodsFor: 'initialization' stamp: 'rmv 8/24/2024 13:14:26'!
 initialize
-	| button layout lightBlue row titleLabel |
+	| button extent layout lightBlue row titleLabel |
 
 	titleLabel := LabelMorph new
 		contents: 'To Do List';
@@ -626,9 +626,11 @@ initialize
 	button := BasicButtonMorph label: 'Add' onClick: [ self addTodoFromEntry ].
 	
 	row := LayoutMorph newRow
-		color: Color transparent.
+		color: Color transparent;
+		separation: 10;
+		useEdgeSpace: false.
 	row layoutSpec proportionalHeight: 0. "defaults to 1"
-	row addMorphs: {todoEntry. button} withSpace: 10.
+	row addMorphs: {todoEntry. button}.
 
 	todosPane := LayoutMorph newColumn useEdgeSpace: false.
 	todosPane layoutSpec proportionalWidth: 1.
@@ -673,8 +675,11 @@ initialize
 	window openInWorld.
 	
 	"Size the window to the minimum size that holds the contents.
-	 This must be done AFTER sending #openInWorld!!"
-	window morphExtent: window minimumExtent! !
+	 This must be done AFTER sending #openInWorld!!
+	 This stopped working correctly and I don't know why."
+	"window morphExtent: window minimumExtent."
+	extent := window minimumExtent.
+	window morphExtent: 300 @ extent y.! !
 
 !TodoApp methodsFor: 'accessing' stamp: 'RMV 8/15/2024 18:46:56'!
 status
@@ -686,7 +691,7 @@ status
 		].
 	^ '{1} of {2} remaining' format: {remaining. todos size}.! !
 
-!TodoApp methodsFor: 'private' stamp: 'RMV 8/18/2024 18:43:20'!
+!TodoApp methodsFor: 'private' stamp: 'rmv 8/24/2024 13:12:14'!
 addTodo: aString atStart: aBoolean
 	| todo |
 	todo := Todo text: aString.
@@ -723,15 +728,4 @@ logAs: aString
 leftTopAlign
 	self layoutSpec offAxisEdgeWeight: 0.
 ! !
-
-!LayoutMorph methodsFor: '*TodoApp' stamp: 'RMV 8/5/2024 16:42:08'!
-addMorphs: anArray withSpace: aNumber
-	"Adds each morph in anArray with a spacer morph between them whose width is aNumber."
-	anArray
-		do: [ :morph | self addMorph: morph]
-		separatedBy: [
-			| spacer |
-			spacer := BoxedMorph new morphExtent: 10@10; borderWidth: 0; color: Color transparent.
-			self addMorph: spacer
-		]! !
 Todo initialize!
