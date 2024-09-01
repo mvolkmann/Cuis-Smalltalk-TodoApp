@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6629] on 24 August 2024 at 1:15:39 pm'!
+'From Cuis7.1 [latest update: #6635] on 1 September 2024 at 12:01:46 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 411!
+!provides: 'TodoApp' 1 412!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -55,16 +55,6 @@ TextEntryMorph subclass: #CenteredTextEntryMorph
 CenteredTextEntryMorph class
 	instanceVariableNames: ''!
 
-!classDefinition: #TextEntry2Morph category: #TodoApp!
-TextEntryMorph subclass: #TextEntry2Morph
-	instanceVariableNames: 'escapeAction'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TodoApp'!
-!classDefinition: 'TextEntry2Morph class' category: #TodoApp!
-TextEntry2Morph class
-	instanceVariableNames: ''!
-
 !classDefinition: #Todo category: #TodoApp!
 Object subclass: #Todo
 	instanceVariableNames: 'checkbox label labelFont onDelete onDoneToggle row'
@@ -113,9 +103,6 @@ TextEntryMorph supports single-line text entry,
 but does not center the text vertically.
 This subclass of TextEntryMorph fixes that.!
 
-!TextEntry2Morph commentStamp: 'RMV 8/18/2024 14:53:50' prior: 0!
-This is a subclass of TextEntryMorph that addes the ability to listen for presses of the escape key.!
-
 !Todo commentStamp: 'RMV 8/18/2024 14:54:14' prior: 0!
 Instances of this class represent a todo item that has a text description and can be marked as done.
 Send #morph to get a morph that represents a todo item.!
@@ -150,7 +137,7 @@ font: aFont
 handlesMouseDown: aMouseEvent
 	^ true! !
 
-!EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:57:25'!
+!EditableLabelMorph methodsFor: 'as yet unclassified' stamp: 'rmv 9/1/2024 12:00:31'!
 initialize
 	super initialize.
 	super color: Color transparent.
@@ -158,17 +145,28 @@ initialize
 	label := LabelMorph new.
 	self addMorph: label.
 	
-	textEntry := TextEntry2Morph new.
+	textEntry := TextEntryMorph new.
 	textEntry crAction: [
 		label contents: textEntry contents.
 		textEntry visible: false.
 		label visible: true.
 	].
-	textEntry escapeAction: [
-		textEntry visible: false.
-		label visible: true.
-		textEntry contents: label contents.
+
+	"TextEntryMorph uses an instance of SimpleTextEditor which is a subclass of Editor.
+	The Editor class method initializeKeyboardActions configures
+	the action for pressing the escape key be #offerMenuFromEsc:.
+	We are using the escape key to trigger hiding the TextEntryMorph and resetting its value.
+	So the next line disables showing the help popup."
+	textEntry editor class keyboardActions at: 27 + 1 put: #noop:.
+	
+	textEntry setProperty: #keyStroke: toValue: [ :event |
+		event isEsc ifTrue: [
+			textEntry visible: false.
+			label visible: true.
+			textEntry contents: label contents.
+		]
 	].
+
 	textEntry visible: false.
 	self addMorph: textEntry.! !
 
@@ -513,20 +511,6 @@ initialize
 	padding := (height - lineHeight) / 2.
 	self layoutSpec: (LayoutSpec fixedWidth: width fixedHeight: height)
 ! !
-
-!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:31:52'!
-escapeAction
-	^ escapeAction! !
-
-!TextEntry2Morph methodsFor: 'accessing' stamp: 'RMV 8/17/2024 18:32:07'!
-escapeAction: aBlock
-	escapeAction := aBlock! !
-
-!TextEntry2Morph methodsFor: 'event handling' stamp: 'RMV 8/17/2024 18:38:10'!
-keyStroke: aKeyboardEvent
-	(aKeyboardEvent isEsc and: (escapeAction isNil not))
-		ifTrue: [	 escapeAction value ]
-		ifFalse: [ super keyStroke: aKeyboardEvent ]! !
 
 !Todo methodsFor: 'accessing' stamp: 'RMV 8/15/2024 18:40:33'!
 done
