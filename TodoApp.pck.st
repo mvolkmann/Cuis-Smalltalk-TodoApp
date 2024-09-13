@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6635] on 12 September 2024 at 9:15:19 pm'!
+'From Cuis7.1 [latest update: #6684] on 13 September 2024 at 11:02:21 am'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 415!
+!provides: 'TodoApp' 1 416!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -172,10 +172,9 @@ new
 	the superclass LayoutMorph new method triggers an error."
 	^ self newRow! !
 
-!TodosPane methodsFor: 'initialization' stamp: 'rmv 9/12/2024 21:13:44'!
+!TodosPane methodsFor: 'initialization' stamp: 'rmv 9/13/2024 11:00:49'!
 initialize
 	super initialize.
-	self useEdgeSpace: false.
 	self adjustExtent.
 	self color: Color transparent.
 	! !
@@ -415,7 +414,7 @@ onDoneToggle: aBlock
 handleLabelClick: aMouseEvent
 	aMouseEvent logAs: 'Todo handleLabelClick: aMouseEvent'.! !
 
-!Todo methodsFor: 'initialization' stamp: 'rmv 9/1/2024 14:47:41'!
+!Todo methodsFor: 'initialization' stamp: 'rmv 9/13/2024 11:01:11'!
 initialize
 	| button buttonFont |
 	
@@ -441,8 +440,7 @@ initialize
 	button fillColor: Color transparent; textColor: Color red.
 	button font: buttonFont.
 		
-	row := LayoutMorph newRow useEdgeSpace: false.
-	"row borderColor: Color red; borderWidth: 1."
+	row := LayoutMorph newRow.
 	row color: Color transparent.
 	row layoutSpec proportionalWidth: 1.
 	
@@ -466,7 +464,7 @@ text: aString
 initialize
 	TrueTypeFontFamily readAllTrueTypeFontsIn: (DirectoryEntry trueTypeFontsDirectory / 'KurintoSans')! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'rmv 9/12/2024 21:00:19'!
+!TodoApp methodsFor: 'initialization' stamp: 'rmv 9/13/2024 10:59:40'!
 initialize
 	| button extent layout lightBlue row titleLabel |
 
@@ -485,8 +483,7 @@ initialize
 	
 	row := LayoutMorph newRow
 		color: Color transparent;
-		separation: 10;
-		useEdgeSpace: false.
+		separation: 10.
 	row layoutSpec proportionalHeight: 0. "defaults to 1"
 	row addMorph: todoEntry.
 	row addMorph: button.
@@ -499,9 +496,6 @@ initialize
 	scrollPane hHideScrollBar.
 	scrollPane color: Color transparent.
 	scrollPane scroller: todosPane.
-	"scrollPane onExtentChanged: [ :newExtent |
-		todosPane morphWidth: (scrollPane hScrollBarWidth - 10).
-	]."
 
 	todos := OrderedCollection new.
 	
@@ -518,7 +512,7 @@ initialize
 		setLabel: 'Todo App'.
 
 	layout := window layoutMorph.
-	layout color: Color white; separation: 20.
+	layout color: Color white; padding: 10; separation: 20.
 	layout addMorph: titleLabel.
 	layout addMorph: statusLabel.
 	layout addMorph: row.
