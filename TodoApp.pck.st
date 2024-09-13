@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6635] on 1 September 2024 at 12:01:46 pm'!
+'From Cuis7.1 [latest update: #6635] on 12 September 2024 at 9:15:19 pm'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 412!
+!provides: 'TodoApp' 1 415!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -15,14 +15,14 @@ LayoutMorph subclass: #EditableLabelMorph
 EditableLabelMorph class
 	instanceVariableNames: ''!
 
-!classDefinition: #PluggableScroll2Pane category: #TodoApp!
-PluggableScrollPane subclass: #PluggableScroll2Pane
-	instanceVariableNames: 'onExtentChanged'
+!classDefinition: #TodosPane category: #TodoApp!
+LayoutMorph subclass: #TodosPane
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TodoApp'!
-!classDefinition: 'PluggableScroll2Pane class' category: #TodoApp!
-PluggableScroll2Pane class
+!classDefinition: 'TodosPane class' category: #TodoApp!
+TodosPane class
 	instanceVariableNames: ''!
 
 !classDefinition: #BasicButtonMorph category: #TodoApp!
@@ -43,16 +43,6 @@ BoxedMorph subclass: #BasicCheckboxMorph
 	category: 'TodoApp'!
 !classDefinition: 'BasicCheckboxMorph class' category: #TodoApp!
 BasicCheckboxMorph class
-	instanceVariableNames: ''!
-
-!classDefinition: #CenteredTextEntryMorph category: #TodoApp!
-TextEntryMorph subclass: #CenteredTextEntryMorph
-	instanceVariableNames: 'padding'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TodoApp'!
-!classDefinition: 'CenteredTextEntryMorph class' category: #TodoApp!
-CenteredTextEntryMorph class
 	instanceVariableNames: ''!
 
 !classDefinition: #Todo category: #TodoApp!
@@ -88,20 +78,12 @@ and make the LabelMorph visible with the new contents.
 Press the escape key to discard the changes, make the TextEntry2Morph invisible,
 and make the LabelMorph visible with the old contents.!
 
-!PluggableScroll2Pane commentStamp: 'RMV 8/18/2024 14:53:09' prior: 0!
-This is a subclass of PluggableScrollPane that adds the ability to listen for extent changes.!
-
 !BasicButtonMorph commentStamp: 'RMV 8/18/2024 14:46:14' prior: 0!
 This is a basic button morph that is simpler and easier to understand that PluggableButtonMorph.!
 
 !BasicCheckboxMorph commentStamp: 'RMV 8/18/2024 14:46:57' prior: 0!
 This is a basic checkbox morph that is simpler and easier to understand that CheckButtonMorph.
 It also has a look that I find more intuitive.!
-
-!CenteredTextEntryMorph commentStamp: 'RMV 8/18/2024 14:47:09' prior: 0!
-TextEntryMorph supports single-line text entry,
-but does not center the text vertically.
-This subclass of TextEntryMorph fixes that.!
 
 !Todo commentStamp: 'RMV 8/18/2024 14:54:14' prior: 0!
 Instances of this class represent a todo item that has a text description and can be marked as done.
@@ -190,14 +172,21 @@ new
 	the superclass LayoutMorph new method triggers an error."
 	^ self newRow! !
 
-!PluggableScroll2Pane methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:08:48'!
-extentChanged: oldExtent
-	super extentChanged: oldExtent.
-	onExtentChanged ifNotNil: [ onExtentChanged value: self morphExtent ].! !
+!TodosPane methodsFor: 'initialization' stamp: 'rmv 9/12/2024 21:13:44'!
+initialize
+	super initialize.
+	self useEdgeSpace: false.
+	self adjustExtent.
+	self color: Color transparent.
+	! !
 
-!PluggableScroll2Pane methodsFor: 'as yet unclassified' stamp: 'RMV 8/17/2024 19:08:33'!
-onExtentChanged: aBlock
-	onExtentChanged := aBlock! !
+!TodosPane methodsFor: 'change reporting' stamp: 'rmv 9/12/2024 21:05:19'!
+adjustExtent
+	owner ifNotNil: [ self morphWidth: owner viewableWidth ]! !
+
+!TodosPane class methodsFor: 'as yet unclassified' stamp: 'rmv 9/12/2024 20:32:54'!
+new
+	^ self newColumn! !
 
 !BasicButtonMorph methodsFor: 'drawing' stamp: 'RMV 8/16/2024 16:32:44'!
 drawOn: aCanvas
@@ -397,121 +386,6 @@ hoverColor: aColor
 requiresVectorCanvas
 	^ true! !
 
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/17/2024 16:16:50'!
-characterIndexAtPoint: aPoint
-	| delta line block f pPoint |
-	delta := padding negated.
-	pPoint := aPoint translatedBy: delta @ delta.
-	f := self fontToUse.
-	line := TextLine
-		start: 1
-		stop: contents size
-		internalSpaces: 0
-		paddingWidth: 0.
-	line
-		rectangle: (0 @ 0 extent: extent);
-		lineHeight: f lineSpacing baseline: f ascent.
-	block := (CharacterBlockScanner new text: (contents asText font: f))
-		defaultFont: f;
-		characterBlockAtPoint: pPoint in: line forCursorPosition: true.
-	^ block stringIndex.! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/5/2024 16:56:34'!
-displayTextCursorAtX: x top: top bottom: bottom emphasis: anEmphasis on: aCanvas
-	| textCursorColor x1 isBold isItalic x0 h w halfW r d |
-	isBold := anEmphasis allMask: 1.
-	isItalic := anEmphasis allMask: 2.
-	textCursorColor := Theme current textCursor.
-	h := bottom - top.
-	w := isBold
-		ifTrue: [ h // 25 + 2 ]
-		ifFalse: [ h // 30 + 1 ].
-	halfW := w // 2.
-	isItalic
-		ifTrue: [
-			"Keep tweaking if needed!!"
-			d := isBold
-				ifTrue: [ 3 ]
-				ifFalse: [ h // 24 ].
-			x0 := x - (h * 5 // 24) + d.
-			x1 := x + d ]
-		ifFalse: [
-			x0 := x.
-			x1 := x ].
-	x0 < halfW ifTrue: [
-		x1 := x1 - x0 + halfW.
-		x0 := halfW ].
-	r := extent x - halfW - 1.
-	r < x1 ifTrue: [
-		x0 := x0 + r - x1.
-		x1 := r ].
-	textCursorRect := x0 - halfW - 1 @ top corner: x1 + halfW + 1 + 1 @ bottom.
-	aCanvas
-		line: x0 + halfW @ bottom
-		to: x1 + halfW @ (top + w)
-		width: w
-		color: textCursorColor.! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 08:59:44'!
-drawOn: aCanvas
-	aCanvas
-		fillRectangle: (0 @ 0 extent: extent)
-		color: backgroundColor.
-	self hasSelection ifTrue: [ self drawSelectionOn: aCanvas ].
-	self hasTextCursor ifTrue: [ self drawTextCursorOn: aCanvas ].
-	aCanvas
-		drawString: contents
-		at: padding @ padding
-		font: self fontToUse
-		color: color.
-	borderWidth > 0 ifTrue: [
-		aCanvas
-			frameRectangle: (0 @ 0 extent: extent x + 1 @ extent y)
-			color: borderColor
-			borderWidth: borderWidth
-			borderStyleSymbol: #simple ].! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:00:58'!
-drawSelectionOn: aCanvas
-	| bottom leftX rightX |
-	
-	bottom := self baseFont lineSpacing.
-	leftX := self fontToUse widthOfString: contents from: 1 to: editor startIndex - 1.
-	leftX := leftX min: extent x.
-	rightX := self fontToUse widthOfString: contents from: 1 to: editor stopIndex - 1.
-	rightX := rightX min: extent x.
-
-	aCanvas
-		fillRectangle: (padding + leftX @ padding corner: rightX + padding + 1 @ (padding + bottom + 1))
-		color: (Theme current textHighlightFocused: self hasKeyboardFocus).! !
-
-!CenteredTextEntryMorph methodsFor: 'drawing' stamp: 'RMV 8/6/2024 09:01:14'!
-drawTextCursorOn: aCanvas
-	| bottom x |
-	showTextCursor ifTrue: [
-		bottom := self baseFont lineSpacing.
-		x := self fontToUse
-			widthOfString: contents
-			from: 1
-			to: editor startIndex - 1.
-		self
-			displayTextCursorAtX: x + padding
-			top: padding - 2
-			bottom: padding + bottom - 2
-			emphasis: emphasis
-			on: aCanvas ].! !
-
-!CenteredTextEntryMorph methodsFor: 'initialization' stamp: 'RMV 8/17/2024 18:49:58'!
-initialize
-	| height lineHeight width |
-	super initialize.
-	width := self morphExtent x.
-	height := self morphExtent y.
-	lineHeight := self baseFont lineSpacing.
-	padding := (height - lineHeight) / 2.
-	self layoutSpec: (LayoutSpec fixedWidth: width fixedHeight: height)
-! !
-
 !Todo methodsFor: 'accessing' stamp: 'RMV 8/15/2024 18:40:33'!
 done
 	^ checkbox checked! !
@@ -541,7 +415,7 @@ onDoneToggle: aBlock
 handleLabelClick: aMouseEvent
 	aMouseEvent logAs: 'Todo handleLabelClick: aMouseEvent'.! !
 
-!Todo methodsFor: 'initialization' stamp: 'rmv 8/21/2024 19:52:15'!
+!Todo methodsFor: 'initialization' stamp: 'rmv 9/1/2024 14:47:41'!
 initialize
 	| button buttonFont |
 	
@@ -576,7 +450,7 @@ initialize
 	row addMorph: checkbox.
 	row addMorph: label.
 	row addMorph: button.
-	
+ 
 	"Center the submorphs vertically."
 	row submorphsDo: [:morph | morph layoutSpec offAxisEdgeWeight: 0.5]! !
 
@@ -592,7 +466,7 @@ text: aString
 initialize
 	TrueTypeFontFamily readAllTrueTypeFontsIn: (DirectoryEntry trueTypeFontsDirectory / 'KurintoSans')! !
 
-!TodoApp methodsFor: 'initialization' stamp: 'rmv 8/24/2024 13:14:26'!
+!TodoApp methodsFor: 'initialization' stamp: 'rmv 9/12/2024 21:00:19'!
 initialize
 	| button extent layout lightBlue row titleLabel |
 
@@ -603,8 +477,8 @@ initialize
 	statusLabel := LabelMorph new
 		color: Color gray.
 	
-	todoEntry := CenteredTextEntryMorph contents: ''.
-	todoEntry layoutSpec fixedWidth: 240.
+	todoEntry := TextEntryMorph contents: ''.
+	todoEntry layoutSpec proportionalWidth: 1.
 	todoEntry crAction: [ self addTodoFromEntry ].
 	
 	button := BasicButtonMorph label: 'Add' onClick: [ self addTodoFromEntry ].
@@ -614,21 +488,20 @@ initialize
 		separation: 10;
 		useEdgeSpace: false.
 	row layoutSpec proportionalHeight: 0. "defaults to 1"
-	row addMorphs: {todoEntry. button}.
+	row addMorph: todoEntry.
+	row addMorph: button.
 
-	todosPane := LayoutMorph newColumn useEdgeSpace: false.
-	todosPane layoutSpec proportionalWidth: 1.
-	todosPane color: Color transparent.
+	todosPane := TodosPane new.
 
-	scrollPane := PluggableScroll2Pane new.
+	scrollPane := PluggableScrollPane new.
 	scrollPane layoutSpec 	proportionalWidth: 1.
 	scrollPane layoutSpec proportionalHeight: 1 minimum: 100.
 	scrollPane hHideScrollBar.
 	scrollPane color: Color transparent.
 	scrollPane scroller: todosPane.
-	scrollPane onExtentChanged: [ :newExtent |
+	"scrollPane onExtentChanged: [ :newExtent |
 		todosPane morphWidth: (scrollPane hScrollBarWidth - 10).
-	].
+	]."
 
 	todos := OrderedCollection new.
 	
