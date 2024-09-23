@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6684] on 13 September 2024 at 11:02:21 am'!
+'From Cuis7.1 [latest update: #6739] on 23 September 2024 at 11:30:24 am'!
 'Description I created this package to learn more about Morphic.'!
-!provides: 'TodoApp' 1 416!
+!provides: 'TodoApp' 1 417!
 !requires: 'UI-Entry' 1 51 nil!
 SystemOrganization addCategory: #TodoApp!
 
@@ -26,8 +26,8 @@ TodosPane class
 	instanceVariableNames: ''!
 
 !classDefinition: #BasicButtonMorph category: #TodoApp!
-BoxedMorph subclass: #BasicButtonMorph
-	instanceVariableNames: 'fillColor font hoverColor hovered label onClick padding textColor'
+BorderedBoxMorph subclass: #BasicButtonMorph
+	instanceVariableNames: 'fillColor font hoverColor hovered label onClick textColor'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TodoApp'!
@@ -36,7 +36,7 @@ BasicButtonMorph class
 	instanceVariableNames: 'label onClick'!
 
 !classDefinition: #BasicCheckboxMorph category: #TodoApp!
-BoxedMorph subclass: #BasicCheckboxMorph
+BorderedBoxMorph subclass: #BasicCheckboxMorph
 	instanceVariableNames: 'checked fillColor hoverColor hovered onChange'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -187,23 +187,24 @@ adjustExtent
 new
 	^ self newColumn! !
 
-!BasicButtonMorph methodsFor: 'drawing' stamp: 'RMV 8/16/2024 16:32:44'!
+!BasicButtonMorph methodsFor: 'drawing' stamp: 'RMV 9/23/2024 11:28:39'!
 drawOn: aCanvas
-	| rect rectColor |
+	| radius rect rectColor |
 		
 	rect := Rectangle origin: 0@0 extent: self morphExtent.
 	rectColor := hovered ifTrue: hoverColor ifFalse: fillColor.
-	aCanvas roundRect: rect color: rectColor radius: padding.
+	radius := padding x max: padding y.
+	aCanvas roundRect: rect color: rectColor radius: radius.
 	
 	aCanvas
 		drawString: label
 		from: 1
 		to: label size
-		atBaseline: padding @ (padding + font pointSize)
+		atBaseline: padding x @ (padding y + font pointSize)
 		font: font
 		color: textColor! !
 
-!BasicButtonMorph methodsFor: 'initialization' stamp: 'RMV 8/16/2024 16:32:58'!
+!BasicButtonMorph methodsFor: 'initialization' stamp: 'RMV 9/23/2024 11:26:11'!
 initialize
 	super initialize.
 	
@@ -213,7 +214,7 @@ initialize
 	font := FontFamily defaultFamilyAndPointSize.
 	hovered := false.
 	hoverColor := `Color black alpha: 0.2`.
-	padding := 10.
+	padding := 10 @ 10.
 	textColor := Color black.! !
 
 !BasicButtonMorph methodsFor: 'event handling' stamp: 'RMV 8/15/2024 19:00:16'!
@@ -274,13 +275,13 @@ hoverColor
 hoverColor: aColor
 	hoverColor := aColor! !
 
-!BasicButtonMorph methodsFor: 'accessing' stamp: 'RMV 8/18/2024 13:59:43'!
+!BasicButtonMorph methodsFor: 'accessing' stamp: 'RMV 9/23/2024 11:26:42'!
 morphExtent
 	| labelHeight labelWidth |
 	font ifNil: [ font := FontFamily defaultFamilyAndPointSize ].
 	labelWidth := font widthOfString: label.
 	labelHeight := font pointSize. "TODO: correct?"
-	^ (padding * 2 + labelWidth) @ (padding * 2 + labelHeight)
+	^ (padding x * 2 + labelWidth) @ (padding y * 2 + labelHeight)
 	
 ! !
 
